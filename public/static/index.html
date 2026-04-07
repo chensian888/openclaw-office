@@ -3849,10 +3849,19 @@ function toggleBrokerPanel() {
         }
 
         function fetchGuestAgents() {
+            if (LITE_MODE) {
+                guestAgents = [];
+                try {
+                    const list = document.getElementById('guest-agent-list');
+                    if (list) list.innerHTML = '<div style="padding:10px; color:#94a3b8; font-family: ArkPixel, monospace;">LITE 模式：已关闭访客渲染</div>';
+                } catch (e) {}
+                return Promise.resolve();
+            }
+
             // demo 随机状态先更新（不依赖后端）
             maybeRandomizeDemoVisitors();
 
-            if (DEMO_MODE || LITE_MODE) {
+            if (DEMO_MODE) {
                 renderGuestAgentList();
                 renderGuestAgentsInScene();
                 return Promise.resolve();
@@ -3988,8 +3997,9 @@ function toggleBrokerPanel() {
             loadingText = document.getElementById('loading-text');
             loadingProgressContainer = document.getElementById('loading-progress-container');
             
-            // 设置资源总数（全部首屏加载：装饰也第一时间出现）
-            totalAssets = 15;
+            // 设置资源总数
+            // LITE_MODE：首屏尽量少加载，提升 GitHub Pages/弱网打开速度
+            totalAssets = LITE_MODE ? 7 : 15;
             loadedAssets = 0;
             
             // 加载进度监听
@@ -4010,21 +4020,23 @@ function toggleBrokerPanel() {
             this.load.image('sofa_idle', 'sofa-idle-v3.png?v={{VERSION_TIMESTAMP}}');
             this.load.image('sofa_shadow', 'sofa-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
 
-            // Decor
-            this.load.spritesheet('plants', 'plants-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
-            this.load.spritesheet('posters', 'posters-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
-            this.load.spritesheet('coffee_machine', 'coffee-machine-v3-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 230, frameHeight: 230 });
-            this.load.image('coffee_machine_shadow', 'coffee-machine-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
-            this.load.spritesheet('serverroom', 'serverroom-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 180, frameHeight: 251 });
-
-            // Error / bug animation: 180x180, 96 frames (repacked grid)
-            this.load.spritesheet('error_bug', 'error-bug-spritesheet-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 220, frameHeight: 220 });
-
             // 运行时 Gemini 配置（用于搬家/中介生图）
             this.geminiConfig = { hasKey: false, model: 'gemini-3.1-flash-image-preview' };
 
-            // Cat spritesheet: 160x160, 4x4=16 cats
-            this.load.spritesheet('cats', 'cats-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+            if (!LITE_MODE) {
+                // Decor
+                this.load.spritesheet('plants', 'plants-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+                this.load.spritesheet('posters', 'posters-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+                this.load.spritesheet('coffee_machine', 'coffee-machine-v3-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 230, frameHeight: 230 });
+                this.load.image('coffee_machine_shadow', 'coffee-machine-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
+                this.load.spritesheet('serverroom', 'serverroom-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 180, frameHeight: 251 });
+
+                // Error / bug animation
+                this.load.spritesheet('error_bug', 'error-bug-spritesheet-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 220, frameHeight: 220 });
+
+                // Cat spritesheet
+                this.load.spritesheet('cats', 'cats-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+            }
 
             // Desk
             // Star working animation: repacked to grid to avoid WebGL max texture size limits
@@ -4040,16 +4052,18 @@ function toggleBrokerPanel() {
             this.load.image('memo_bg', 'memo-bg.webp?v={{VERSION_TIMESTAMP}}');
             // Desk v2 (webp only)
             this.load.image('desk_v2', 'desk-v3.webp?v={{VERSION_TIMESTAMP}}');
-            // Flower spritesheet (65x65, 16 frames)
-            this.load.spritesheet('flowers', 'flowers-bloom-v2.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: FLOWERS_FRAME_W, frameHeight: FLOWERS_FRAME_H });
+            if (!LITE_MODE) {
+                // Flower spritesheet
+                this.load.spritesheet('flowers', 'flowers-bloom-v2.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: FLOWERS_FRAME_W, frameHeight: FLOWERS_FRAME_H });
 
-            // Guest/Demo agent sprites
-            this.load.spritesheet('guest_anim_1', 'guest_anim_1.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
-            this.load.spritesheet('guest_anim_2', 'guest_anim_2.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
-            this.load.spritesheet('guest_anim_3', 'guest_anim_3.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
-            this.load.spritesheet('guest_anim_4', 'guest_anim_4.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
-            this.load.spritesheet('guest_anim_5', 'guest_anim_5.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
-            this.load.spritesheet('guest_anim_6', 'guest_anim_6.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
+                // Guest/Demo agent sprites
+                this.load.spritesheet('guest_anim_1', 'guest_anim_1.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
+                this.load.spritesheet('guest_anim_2', 'guest_anim_2.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
+                this.load.spritesheet('guest_anim_3', 'guest_anim_3.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
+                this.load.spritesheet('guest_anim_4', 'guest_anim_4.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
+                this.load.spritesheet('guest_anim_5', 'guest_anim_5.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
+                this.load.spritesheet('guest_anim_6', 'guest_anim_6.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 32, frameHeight: 32 });
+            }
         }
 
         function create() {
@@ -4085,13 +4099,15 @@ function toggleBrokerPanel() {
 
 
             // 创建 6 个访客角色的循环 idle 动画（8帧循环）
-            for (let i = 1; i <= 6; i++) {
-                this.anims.create({
-                    key: `guest_anim_${i}_idle`,
-                    frames: this.anims.generateFrameNumbers(`guest_anim_${i}`, { start: 0, end: 7 }),
-                    frameRate: 8,
-                    repeat: -1
-                });
+            if (!LITE_MODE) {
+                for (let i = 1; i <= 6; i++) {
+                    this.anims.create({
+                        key: `guest_anim_${i}_idle`,
+                        frames: this.anims.generateFrameNumbers(`guest_anim_${i}`, { start: 0, end: 7 }),
+                        frameRate: 8,
+                        repeat: -1
+                    });
+                }
             }
 
             star = game.physics.add.sprite(areas.breakroom.x, areas.breakroom.y, 'star_idle');
@@ -4128,124 +4144,118 @@ function toggleBrokerPanel() {
             game.add.text(plaqueX + 190, plaqueY, '⭐', { fontFamily: 'ArkPixel, monospace', fontSize: '20px' }).setOrigin(0.5);
             window.officePlaqueText = plaqueText;
 
-            // Random plant at (565,178) (frame 0-15, 160x160 each)
-            const plantFrameCount = 16;
-            const randomPlantFrame = Math.floor(Math.random() * plantFrameCount);
-            const plant = game.add.sprite(565, 178, 'plants', randomPlantFrame).setOrigin(0.5);
-            plant.setDepth(5);
-            plant.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.plantSprite = plant;
-            window.plantFrameCount = plantFrameCount;
-            
-            plant.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.plantFrameCount);
-                window.plantSprite.setFrame(next);
-            });
+            if (!LITE_MODE) {
+                // Random plant at (565,178)
+                const plantFrameCount = 16;
+                const randomPlantFrame = Math.floor(Math.random() * plantFrameCount);
+                const plant = game.add.sprite(565, 178, 'plants', randomPlantFrame).setOrigin(0.5);
+                plant.setDepth(5);
+                plant.setInteractive({ useHandCursor: true });
+                window.plantSprite = plant;
+                window.plantFrameCount = plantFrameCount;
+                plant.on('pointerdown', () => {
+                    const next = Math.floor(Math.random() * window.plantFrameCount);
+                    window.plantSprite.setFrame(next);
+                });
 
-            // Random plant at (230,185) (frame 0-15, 160x160 each)
-            const plant2Frame = Math.floor(Math.random() * plantFrameCount);
-            const plant2 = game.add.sprite(230, 185, 'plants', plant2Frame).setOrigin(0.5);
-            plant2.setDepth(5);
-            plant2.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.plantSprite2 = plant2;
-            
-            plant2.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.plantFrameCount);
-                window.plantSprite2.setFrame(next);
-            });
+                // Random plant at (230,185)
+                const plant2Frame = Math.floor(Math.random() * plantFrameCount);
+                const plant2 = game.add.sprite(230, 185, 'plants', plant2Frame).setOrigin(0.5);
+                plant2.setDepth(5);
+                plant2.setInteractive({ useHandCursor: true });
+                window.plantSprite2 = plant2;
+                plant2.on('pointerdown', () => {
+                    const next = Math.floor(Math.random() * window.plantFrameCount);
+                    window.plantSprite2.setFrame(next);
+                });
 
-            // Random plant at (977,496) (frame 0-15, 160x160 each)
-            const plant3Frame = Math.floor(Math.random() * plantFrameCount);
-            const plant3 = game.add.sprite(977, 496, 'plants', plant3Frame).setOrigin(0.5);
-            plant3.setDepth(5);
-            plant3.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.plantSprite3 = plant3;
-            
-            plant3.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.plantFrameCount);
-                window.plantSprite3.setFrame(next);
-            });
+                // Random plant at (977,496)
+                const plant3Frame = Math.floor(Math.random() * plantFrameCount);
+                const plant3 = game.add.sprite(977, 496, 'plants', plant3Frame).setOrigin(0.5);
+                plant3.setDepth(5);
+                plant3.setInteractive({ useHandCursor: true });
+                window.plantSprite3 = plant3;
+                plant3.on('pointerdown', () => {
+                    const next = Math.floor(Math.random() * window.plantFrameCount);
+                    window.plantSprite3.setFrame(next);
+                });
 
-            // Random poster at (252,66) (random frame from spritesheet)
-            const postersFrameCount = (this.textures.get('posters')?.frameTotal || 1) - 1;
-            const randomPosterFrame = Math.floor(Math.random() * Math.max(1, postersFrameCount));
-            const poster = game.add.sprite(252, 66, 'posters', randomPosterFrame).setOrigin(0.5);
-            poster.setDepth(4);
-            poster.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.posterSprite = poster;
-            window.posterFrameCount = postersFrameCount;
-            
-            poster.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.posterFrameCount);
-                window.posterSprite.setFrame(next);
-            });
+                // Random poster at (252,66)
+                const postersFrameCount = (this.textures.get('posters')?.frameTotal || 1) - 1;
+                const randomPosterFrame = Math.floor(Math.random() * Math.max(1, postersFrameCount));
+                const poster = game.add.sprite(252, 66, 'posters', randomPosterFrame).setOrigin(0.5);
+                poster.setDepth(4);
+                poster.setInteractive({ useHandCursor: true });
+                window.posterSprite = poster;
+                window.posterFrameCount = postersFrameCount;
+                poster.on('pointerdown', () => {
+                    const next = Math.floor(Math.random() * window.posterFrameCount);
+                    window.posterSprite.setFrame(next);
+                });
 
-            // Random cat at (94,557)
-            const catsFrameCount = (this.textures.get('cats')?.frameTotal || 1) - 1;
-            const randomCatFrame = Math.floor(Math.random() * Math.max(1, catsFrameCount));
-            const cat = game.add.sprite(94, 557, 'cats', randomCatFrame).setOrigin(0.5);
-            cat.setDepth(2000); // top layer
-            cat.setInteractive({ useHandCursor: true });
-            // Expose to global for click handler
-            window.catSprite = cat;
-            window.catsFrameCount = catsFrameCount;
-            cat.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.catsFrameCount);
-                window.catSprite.setFrame(next);
-            });
+                // Random cat at (94,557)
+                const catsFrameCount = (this.textures.get('cats')?.frameTotal || 1) - 1;
+                const randomCatFrame = Math.floor(Math.random() * Math.max(1, catsFrameCount));
+                const cat = game.add.sprite(94, 557, 'cats', randomCatFrame).setOrigin(0.5);
+                cat.setDepth(2000);
+                cat.setInteractive({ useHandCursor: true });
+                window.catSprite = cat;
+                window.catsFrameCount = catsFrameCount;
+                cat.on('pointerdown', () => {
+                    const next = Math.floor(Math.random() * window.catsFrameCount);
+                    window.catSprite.setFrame(next);
+                });
 
-            // Coffee machine at (659,397) - animated sprite + shadow
-            const coffeeMachineShadow = this.add.image(659, 397, 'coffee_machine_shadow').setOrigin(0.5);
-            coffeeMachineShadow.setDepth(98);
-            const coffeeFrameMax = Math.max(0, (this.textures.get('coffee_machine')?.frameTotal || 1) - 2);
-            if (this.anims.exists('coffee_machine')) {
-                this.anims.remove('coffee_machine');
+                // Coffee machine
+                const coffeeMachineShadow = this.add.image(659, 397, 'coffee_machine_shadow').setOrigin(0.5);
+                coffeeMachineShadow.setDepth(98);
+                const coffeeFrameMax = Math.max(0, (this.textures.get('coffee_machine')?.frameTotal || 1) - 2);
+                if (this.anims.exists('coffee_machine')) {
+                    this.anims.remove('coffee_machine');
+                }
+                this.anims.create({
+                    key: 'coffee_machine',
+                    frames: this.anims.generateFrameNumbers('coffee_machine', { start: 0, end: coffeeFrameMax }),
+                    frameRate: 12.5,
+                    repeat: -1
+                });
+                const coffeeMachine = this.add.sprite(659, 397, 'coffee_machine').setOrigin(0.5);
+                coffeeMachine.setDepth(99);
+                coffeeMachine.anims.play('coffee_machine', true);
+
+                // Server room animation
+                const serverFrameMax = Math.max(0, (this.textures.get('serverroom')?.frameTotal || 1) - 2);
+                this.anims.create({
+                    key: 'serverroom_on',
+                    frames: this.anims.generateFrameNumbers('serverroom', { start: 0, end: serverFrameMax }),
+                    frameRate: 6,
+                    repeat: -1
+                });
+                serverroom = this.add.sprite(1021, 142, 'serverroom', 0).setOrigin(0.5);
+                serverroom.setDepth(2);
+                serverroom.anims.stop();
+                serverroom.setFrame(0);
             }
-            this.anims.create({
-                key: 'coffee_machine',
-                frames: this.anims.generateFrameNumbers('coffee_machine', { start: 0, end: coffeeFrameMax }),
-                frameRate: 12.5,
-                repeat: -1
-            });
-            const coffeeMachine = this.add.sprite(659, 397, 'coffee_machine').setOrigin(0.5);
-            coffeeMachine.setDepth(99);
-            coffeeMachine.anims.play('coffee_machine', true);
-
-            // Server room animation
-            const serverFrameMax = Math.max(0, (this.textures.get('serverroom')?.frameTotal || 1) - 2);
-            this.anims.create({
-                key: 'serverroom_on',
-                frames: this.anims.generateFrameNumbers('serverroom', { start: 0, end: serverFrameMax }),
-                frameRate: 6,
-                repeat: -1
-            });
-            serverroom = this.add.sprite(1021, 142, 'serverroom', 0).setOrigin(0.5);
-            serverroom.setDepth(2);
-            // 默认 idle: 静止第0帧
-            serverroom.anims.stop();
-            serverroom.setFrame(0);
 
             // Desk at (218,417) (v2)
             const desk = this.add.image(218, 417, 'desk_v2').setOrigin(0.5);
             desk.setDepth(1001);  // desk above starWorking
 
-            // Random flower pot at (310,390), default scale 0.8 (top layer)
-            const flowerFrameCount = Math.max(1, FLOWERS_FRAME_COLS * FLOWERS_FRAME_ROWS); // 动态帧数
-            const randomFlowerFrame = Math.floor(Math.random() * flowerFrameCount);
-            const flower = this.add.sprite(310, 390, 'flowers', randomFlowerFrame).setOrigin(0.5);
-            flower.setScale(0.8);
-            flower.setDepth(1100); // highest among desk/starWorking
-            flower.setInteractive({ useHandCursor: true });
-            window.flowerSprite = flower;
-            window.flowerFrameCount = flowerFrameCount;
-            flower.on('pointerdown', () => {
-                const next = Math.floor(Math.random() * window.flowerFrameCount);
-                window.flowerSprite.setFrame(next);
-            });
+            if (!LITE_MODE) {
+                // Random flower pot
+                const flowerFrameCount = Math.max(1, FLOWERS_FRAME_COLS * FLOWERS_FRAME_ROWS);
+                const randomFlowerFrame = Math.floor(Math.random() * flowerFrameCount);
+                const flower = this.add.sprite(310, 390, 'flowers', randomFlowerFrame).setOrigin(0.5);
+                flower.setScale(0.8);
+                flower.setDepth(1100);
+                flower.setInteractive({ useHandCursor: true });
+                window.flowerSprite = flower;
+                window.flowerFrameCount = flowerFrameCount;
+                flower.on('pointerdown', () => {
+                    const next = Math.floor(Math.random() * window.flowerFrameCount);
+                    window.flowerSprite.setFrame(next);
+                });
+            }
 
             // Star working at desk (217,333)
             this.anims.create({
@@ -4256,22 +4266,23 @@ function toggleBrokerPanel() {
                 repeat: -1
             });
 
-            // Error / bug animation (96 frames)
-            this.anims.create({
-                key: 'error_bug',
-                frames: this.anims.generateFrameNumbers('error_bug', { start: 0, end: 71 }),
-                frameRate: 12,
-                repeat: -1
-            });
+            if (!LITE_MODE) {
+                // Error / bug animation
+                this.anims.create({
+                    key: 'error_bug',
+                    frames: this.anims.generateFrameNumbers('error_bug', { start: 0, end: 71 }),
+                    frameRate: 12,
+                    repeat: -1
+                });
 
-            // Error bug character (moves between two points when state=error)
-            const errorBug = this.add.sprite(1007, 221, 'error_bug', 0).setOrigin(0.5);
-            errorBug.setDepth(50); // above serverroom, below desk/bubbles
-            errorBug.setVisible(false);
-            errorBug.setScale(0.9); // shrink 10%
-            errorBug.anims.play('error_bug', true);
-            window.errorBug = errorBug;
-            window.errorBugDir = 1; // 1 -> to right, -1 -> to left
+                const errorBug = this.add.sprite(1007, 221, 'error_bug', 0).setOrigin(0.5);
+                errorBug.setDepth(50);
+                errorBug.setVisible(false);
+                errorBug.setScale(0.9);
+                errorBug.anims.play('error_bug', true);
+                window.errorBug = errorBug;
+                window.errorBugDir = 1;
+            }
             const starWorking = this.add.sprite(217, 343, 'star_working', 0).setOrigin(0.5);
             starWorking.setVisible(false);
             starWorking.setScale(0.9);
