@@ -13,6 +13,7 @@ dist-ssr
 *.local
 dist.zip
 _ref/
+.vercel/
 
 # Editor directories and files
 .vscode/*
