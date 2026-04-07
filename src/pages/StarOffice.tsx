@@ -47,7 +47,12 @@ export default function StarOfficePage() {
 
   return (
     <div className="h-full w-full">
-      <iframe ref={iframeRef} src="/static/index.html?demo=1" title="Star-Office-UI" className="h-full w-full border-0" />
+      <iframe
+        ref={iframeRef}
+        src={`${import.meta.env.BASE_URL}static/index.html?demo=1`}
+        title="Star-Office-UI"
+        className="h-full w-full border-0"
+      />
     </div>
   )
 }
