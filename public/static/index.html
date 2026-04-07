@@ -4000,56 +4000,52 @@ function toggleBrokerPanel() {
             loadingProgressContainer = document.getElementById('loading-progress-container');
 
             // 设置资源总数
-            // LITE_MODE：首屏尽量少加载，提升 GitHub Pages/弱网打开速度
-            totalAssets = LITE_MODE ? 7 : 15;
+            // LITE_MODE：首屏只加载最核心的 3 个资源，确保秒开
+            totalAssets = LITE_MODE ? 3 : 15;
             loadedAssets = 0;
 
             // 加载进度监听
             this.load.on('filecomplete', () => {
+                console.log('[Star] Loaded:', loadedAssets + 1, '/', totalAssets);
                 updateLoadingProgress();
             });
 
             this.load.on('complete', () => {
+                console.log('[Star] All assets loaded!');
                 hideLoadingOverlay();
             });
 
             // 错误处理：即使资源加载失败也继续
             this.load.on('loaderror', (file) => {
-                console.warn('资源加载失败，跳过:', file.key, file.url);
-                updateLoadingProgress(); // 继续进度
+                console.warn('[Star] 资源加载失败，跳过:', file.key, file.url);
+                loadedAssets++; // 计入进度
+                updateLoadingProgress();
             });
 
-            this.load.on('fileloaderror', (file) => {
-                console.warn('文件加载错误:', file.key, file.url);
-                updateLoadingProgress(); // 继续进度
-            });
-
-            // cache-busting to avoid stale background on client/CDN
-            // use smaller/new map version provided by user
+            // LITE MODE：只加载最核心的 3 个资源（背景 + Star + 沙发）
             this.load.image('office_bg', 'office_bg_small.webp?v={{VERSION_TIMESTAMP}}');
             this.load.spritesheet('star_idle', 'star-idle-v5.png?v={{VERSION_TIMESTAMP}}', { frameWidth: 256, frameHeight: 256 });
-
-            // Furniture
             this.load.image('sofa_idle', 'sofa-idle-v3.png?v={{VERSION_TIMESTAMP}}');
-            this.load.image('sofa_shadow', 'sofa-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
-
-            // 运行时 Gemini 配置（用于搬家/中介生图）
-            this.geminiConfig = { hasKey: false, model: 'gemini-3.1-flash-image-preview' };
 
             if (!LITE_MODE) {
-                // Decor
+                // 完整模式才加载其他装饰
+                this.load.image('sofa_shadow', 'sofa-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
                 this.load.spritesheet('plants', 'plants-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
                 this.load.spritesheet('posters', 'posters-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
                 this.load.spritesheet('coffee_machine', 'coffee-machine-v3-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 230, frameHeight: 230 });
                 this.load.image('coffee_machine_shadow', 'coffee-machine-shadow-v1.png?v={{VERSION_TIMESTAMP}}');
                 this.load.spritesheet('serverroom', 'serverroom-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 180, frameHeight: 251 });
-
-                // Error / bug animation
                 this.load.spritesheet('error_bug', 'error-bug-spritesheet-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 220, frameHeight: 220 });
-
-                // Cat spritesheet
                 this.load.spritesheet('cats', 'cats-spritesheet.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
+                this.load.spritesheet('star_working', 'star-working-spritesheet-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 300, frameHeight: 300 });
+                this.load.spritesheet('sync_anim', 'sync-animation-v3-grid.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 256, frameHeight: 256 });
+                this.load.image('memo_bg', 'memo-bg.webp?v={{VERSION_TIMESTAMP}}');
+                this.load.image('desk_v2', 'desk-v3.webp?v={{VERSION_TIMESTAMP}}');
+                this.load.spritesheet('flowers', 'flowers-bloom-v2.webp?v={{VERSION_TIMESTAMP}}', { frameWidth: 160, frameHeight: 160 });
             }
+
+            // 运行时 Gemini 配置（用于搬家/中介生图）
+            this.geminiConfig = { hasKey: false, model: 'gemini-3.1-flash-image-preview' };
 
             // Desk
             // Star working animation: repacked to grid to avoid WebGL max texture size limits
