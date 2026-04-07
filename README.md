@@ -18,16 +18,29 @@ pnpm run build
 pnpm run preview
 ```
 
-## 部署（推荐：Vercel 导入 GitHub）
+## 部署（GitHub Pages）
 
-1) 推送到 GitHub
+本项目已内置 GitHub Actions 工作流：每次 push 到 `main` 会自动构建并发布到 GitHub Pages。
+
+1) 推送到 GitHub（首次）
 
 ```bash
 git remote add origin https://github.com/<you>/<repo>.git
 git push -u origin main
 ```
 
-2) 打开 `https://vercel.com/new` 导入该仓库并部署
+2) 在仓库开启 Pages
+
+- 进入仓库 → `Settings` → `Pages`
+- `Build and deployment` → `Source` 选择 **GitHub Actions**
+
+3) 等待部署完成
+
+- 进入 `Actions` 标签页查看 `Deploy to GitHub Pages` 是否为绿色 ✅
+
+部署成功后访问：
+
+- `https://<you>.github.io/<repo>/`
 
 ## 目录说明
 
