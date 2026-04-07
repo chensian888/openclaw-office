@@ -3852,7 +3852,18 @@ function toggleBrokerPanel() {
             // demo 随机状态先更新（不依赖后端）
             maybeRandomizeDemoVisitors();
 
-            return fetch('/agents?t=' + Date.now(), { cache: 'no-store' })
+            if (DEMO_MODE || LITE_MODE) {
+                renderGuestAgentList();
+                renderGuestAgentsInScene();
+                return Promise.resolve();
+            }
+
+            const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timer = setTimeout(() => {
+                try { ctrl && ctrl.abort && ctrl.abort(); } catch (e) {}
+            }, 1800);
+
+            return fetch('/agents?t=' + Date.now(), { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
                 .then(response => response.json())
                 .then(data => {
                     // 无论后端返回是否为数组，demo=1 都应保证本地 demo 访客可见
@@ -3909,6 +3920,9 @@ function toggleBrokerPanel() {
                         renderGuestAgentList();
                         renderGuestAgentsInScene();
                     }
+                })
+                .finally(() => {
+                    clearTimeout(timer);
                 });
         }
 
@@ -3936,6 +3950,7 @@ function toggleBrokerPanel() {
 
             // 非关键初始化延后到首屏之后，提升首开速度
             setTimeout(async () => {
+                if (DEMO_MODE || LITE_MODE) return;
                 // 动态探测 flowers 精灵表帧规格（避免写死 65x65 导致显示比例异常）
                 try {
                     const res = await fetch('/assets/list?t=' + Date.now(), { cache: 'no-store' });
